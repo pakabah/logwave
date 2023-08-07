@@ -24,12 +24,14 @@ go get github.com/pakabah/logwave
 LogWave is designed to be easily configurable through environment variables. Before using the library, ensure you have the follwing environment variables set:
 - LOKI_URL: This is the URL endpoint of your Loki instance where the logs will be sent. E.g., `http://localhost:3100/loki/api/v1/push`
 - LOKI_JOB: Represents the job label for your logs. It can be a descriptor of the application or service producing the logs. E.g., `my-web-app`.
+- LOKI_LABELS: Additional labels for your logs in the format "key1=value1,key2=value2".
 - LOGGING_ENABLED: This determines if logging should be enabled. Set to true if you want to enable logging, otherwise set to `false`.
 
 ### Example
 ```bash
 export LOKI_URL=http://localhost:3100/loki/api/v1/push
 export LOKI_JOB=my-web-app
+export LOKI_LABELS=env=production,team=devops
 export LOGGING_ENABLED=true
 ```
 
@@ -47,11 +49,11 @@ lokiLogger := logger.NewLokiLogger(config)
 2. Now you can use the logger to send logs at various levels:
 
 ```go
-lokiLogger.Debug("This is a debug message", map[string]string{"key": "value"})
-lokiLogger.Info("This is an info message", nil)
-lokiLogger.Warn("This is a warning", nil)
-lokiLogger.Error("Oops! An error occurred", nil)
-lokiLogger.Fatal("Fatal error encountered", nil)
+lokiLogger.Debug("This is a debug message", map[string]string{"labelKey": "labelValue"}, map[string]string{"messageKey": "additionalMessage"})
+lokiLogger.Info("This is an info message", nil, map[string]string{"messageKey": "additionalMessage"})
+lokiLogger.Warn("This is a warning", nil, nil)
+lokiLogger.Error("Oops! An error occurred", nil, nil)
+lokiLogger.Fatal("Fatal error encountered", nil, nil)
 ```
 
 3. When you're done logging, or before your application exits, remember to close the logger:
