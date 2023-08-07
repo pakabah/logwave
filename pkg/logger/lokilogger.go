@@ -4,9 +4,18 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
+)
+
+const (
+	DEBUG = "DEBUG"
+	INFO  = "INFO"
+	WARN  = "WARN"
+	ERROR = "ERROR"
+	FATAL = "FATAL"
 )
 
 // LokiLogger implements the Logger interface for Loki
@@ -30,7 +39,7 @@ func (l *LokiLogger) processLogs() {
 	for logMessage := range l.logChannel {
 		err := l.sendToLoki(logMessage.Level, logMessage.Message, logMessage.Labels)
 		if err != nil {
-			fmt.Println(err) // consider a more robust error handling mechanism
+			log.Printf("Error sending log to Loki: %v", err)
 		}
 	}
 }
@@ -89,17 +98,20 @@ func (l *LokiLogger) sendToLoki(level, message string, additionalLabels map[stri
 	}
 
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("Failed to send log to Loki. HTTP response code: %d", resp.StatusCode)
+	}
 
 	return nil
 }
 
 // Send is a general function to send logs
-func (l *LokiLogger) Send(level, message string, additionalLabels map[string]string) error {
+func (l *LokiLogger) Send(level, message string, additionalLabels, additionalMessages map[string]string) error {
 	if !l.Config.LoggingEnabled {
 		return nil
 	}
 
-	l.logChannel <- LogMessage{Level: level, Message: message, Labels: additionalLabels}
+  l.logChannel <- LogMessage{Level: level, Message: message, Labels: additionalLabels, Messages: additionalMessages}
 	return nil
 }
 
@@ -109,26 +121,26 @@ func (l *LokiLogger) Close() {
 }
 
 // Debug logs a debug message
-func (l *LokiLogger) Debug(message string, additionalLabels map[string]string) error {
-	return l.Send("DEBUG", message, additionalLabels)
+func (l *LokiLogger) Debug(message string, additionalLabels, additionalMessages map[string]string) error {
+	return l.Send(DEBUG, message, additionalLabels, additionalMessages)
 }
 
 // Info logs an informational message
-func (l *LokiLogger) Info(message string, additionalLabels map[string]string) error {
-	return l.Send("INFO", message, additionalLabels)
+func (l *LokiLogger) Info(message string, additionalLabels, additionalMessages map[string]string) error {
+	return l.Send(INFO, message, additionalLabels, additionalMessages)
 }
 
 // Warn logs a warning message
-func (l *LokiLogger) Warn(message string, additionalLabels map[string]string) error {
-	return l.Send("WARN", message, additionalLabels)
+func (l *LokiLogger) Warn(message string, additionalLabels, additionalMessages map[string]string) error {
+	return l.Send(WARN, message, additionalLabels, additionalMessages)
 }
 
 // Error logs an error message
-func (l *LokiLogger) Error(message string, additionalLabels map[string]string) error {
-	return l.Send("ERROR", message, additionalLabels)
+func (l *LokiLogger) Error(message string, additionalLabels, additionalMessages map[string]string) error {
+	return l.Send(ERROR, message, additionalLabels, additionalMessages)
 }
 
 // Fatal logs a fatal error message
-func (l *LokiLogger) Fatal(message string, additionalLabels map[string]string) error {
-	return l.Send("FATAL", message, additionalLabels)
+func (l *LokiLogger) Fatal(message string, additionalLabels, additionalMessages map[string]string) error {
+	return l.Send(FATAL, message, additionalLabels, additionalMessages)
 }
