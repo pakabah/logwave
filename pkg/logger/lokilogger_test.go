@@ -1,11 +1,13 @@
 package logger_test
 
 import (
-  "os"
-  "testing"
-  "time"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+	"time"
 
-  "github.com/pakabah/logwave/pkg/logger"
+	"github.com/pakabah/logwave/pkg/logger"
 )
 
 func TestDebug(t *testing.T) {
@@ -34,6 +36,28 @@ func TestDebug(t *testing.T) {
     }
 
     time.Sleep(50 * time.Millisecond)
+  }
+
+  lokiLogger.Close()
+}
+
+// TestSendToLoki_Success tests the successful sending of a log message to Loki.
+func TestSendToLoki_Success(t *testing.T) {
+  // Creating a mock Loki server that responds with a 200 OK status
+  mockLokiServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    w.WriteHeader(http.StatusOK)
+  }))
+  defer mockLokiServer.Close()
+
+  // Setting the Loki URL to the mock Loki server's URL
+  os.Setenv("LOKI_URL", mockLokiServer.URL)
+  config := logger.LoadLokiConfig()
+  lokiLogger := logger.NewLokiLogger(config)
+
+  // Sending a test log message
+  err := lokiLogger.Debug("Testing http", nil, nil)
+  if err != nil {
+    t.Errorf("Expected no error, but got: %v", err)
   }
 
   lokiLogger.Close()

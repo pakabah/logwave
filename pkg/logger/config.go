@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"log"
 	"os"
 	"strings"
 )
@@ -28,7 +29,9 @@ func LoadLokiConfig() LokiConfig {
 			kv := strings.Split(label, "=")
 			if len(kv) == 2 {
 				labelsMap[kv[0]] = kv[1]
-			}
+			} else {
+        log.Printf("Warning: Malformed label detected: '%s'. Expected format: 'key=value'", label)
+      }
 		}
 	}
 
