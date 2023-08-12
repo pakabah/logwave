@@ -1,13 +1,15 @@
 package logger
 
 import (
-  "bytes"
-  "encoding/json"
-  "fmt"
-  "log"
-  "net/http"
-  "strconv"
-  "time"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"log"
+	"math"
+	"net/http"
+	"strconv"
+	"time"
 )
 
 const (
@@ -92,14 +94,26 @@ func (l *LokiLogger) sendToLoki(level, message string, additionalLabels map[stri
     return err
   }
 
-  resp, err := http.Post(config.URL, "application/json", bytes.NewBuffer(data))
+  // Retry mechanism with exponential backoff
+  var resp *http.Response
+  maxRetries := 3
+  for retries := 0; retries < maxRetries; retries++ {
+    resp, err = http.Post(config.URL, "application/json", bytes.NewBuffer(data))
+    if err == nil {
+      break
+    }
+    // Wait with exponential backoff
+    time.Sleep(time.Duration(math.Pow(2, float64(retries))) * time.Millisecond)
+  }
+
   if err != nil {
-    return err
+    return fmt.Errorf("Failed to send log to Loki after %d retries: %w", maxRetries, err)
   }
 
   defer resp.Body.Close()
   if resp.StatusCode != http.StatusOK {
-    return fmt.Errorf("Failed to send log to Loki. HTTP response code: %d", resp.StatusCode)
+    body, _ := io.ReadAll(resp.Body)
+    return fmt.Errorf("Failed to send log to Loki. HTTP response code: %d, response body: %s", resp.StatusCode, body)
   }
 
   return nil
