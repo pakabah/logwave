@@ -6,6 +6,8 @@ import (
 )
 
 // LokiConfig defines configurations for Loki logging
+// LokiConfig holds the configuration for connecting to Grafana Loki.
+// It includes the URL, job name, labels, and a flag to enable or disable logging./ LokiConfig defines configurations for Loki logging
 type LokiConfig struct {
 	URL            string
 	Job            string
@@ -14,6 +16,8 @@ type LokiConfig struct {
 }
 
 // LoadLokiConfig loads Loki configurations from the environment
+// LoadLokiConfig loads the Loki configuration from environment variables.
+// It reads LOKI_URL, LOKI_JOB, LOKI_LABELS, and LOGGING_ENABLED and returns a LokiConfig object.
 func LoadLokiConfig() LokiConfig {
 	loggingEnabled := os.Getenv("LOGGING_ENABLED") == "true"
 
