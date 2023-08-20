@@ -4,11 +4,11 @@ import "time"
 
 // Logger interface for structured logging
 type Logger interface {
-  Debug(message string, additionalLabels map[string]string, additionalMessages map[string]string) error
-  Info(message string, additionalLabels map[string]string, additionalMessages map[string]string) error
-  Warn(message string, additionalLabels map[string]string, additionalMessages map[string]string) error
-  Error(message string, additionalLabels map[string]string, additionalMessages map[string]string) error
-  Fatal(message string, additionalLabels map[string]string, additionalMessages map[string]string) error
+	Debug(message string, additionalLabels map[string]string, additionalMessages map[string]string) error
+	Info(message string, additionalLabels map[string]string, additionalMessages map[string]string) error
+	Warn(message string, additionalLabels map[string]string, additionalMessages map[string]string) error
+	Error(message string, additionalLabels map[string]string, additionalMessages map[string]string) error
+	Fatal(message string, additionalLabels map[string]string, additionalMessages map[string]string) error
 	Close()
 }
 
@@ -23,5 +23,5 @@ type LogEntry struct {
 type LogMessage struct {
 	Level, Message string
 	Labels         map[string]string
-  Messages map[string]string
+	Messages       map[string]string
 }
