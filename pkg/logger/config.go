@@ -30,8 +30,8 @@ func LoadLokiConfig() LokiConfig {
 			if len(kv) == 2 {
 				labelsMap[kv[0]] = kv[1]
 			} else {
-        log.Printf("Warning: Malformed label detected: '%s'. Expected format: 'key=value'", label)
-      }
+				log.Printf("Warning: Malformed label detected: '%s'. Expected format: 'key=value'", label)
+			}
 		}
 	}
 

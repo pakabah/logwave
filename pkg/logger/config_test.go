@@ -53,3 +53,19 @@ func TestLoadLokiConfigLoggingEnabled(t *testing.T) {
   }
 }
 
+func TestMissingEnvironmentVariables(t *testing.T) {
+  // Unset environment variables
+  os.Unsetenv("LOKI_URL")
+  os.Unsetenv("LOKI_JOB")
+
+  config := logger.LoadLokiConfig()
+
+  // Validate specific fields or conditions based on your implementation
+  if config.URL == "" {
+    t.Errorf("Expected LokiURL to be populated, but it is empty")
+  }
+  if config.Job == "" {
+    t.Errorf("Expected Job to be populated, but it is empty")
+  }
+}
+
